@@ -1,0 +1,6 @@
+
+	# Create 1cm x 1cm grid
+        c = self.canvas
+        c.setStrokeGray (0.75)
+        c.grid (range(0,int(width),int(cm)), range(0,int(height),int(cm)))
+        c.setStrokeGray (0)
