@@ -1,23 +1,34 @@
 # -*- encoding: utf-8 -*-
 
+'''
+TODO
+from f60faktura import pdfgen ?
+wrap reportlab so can switch to other pdf render (cairo/pango)??
+make fonts configurable (at least don't hardcode!
+  font1: fixed fields (Helvetica-Bold 8)
+         "Kvitering"    12
+         "GIRO"         14
+  font2: Courier-Bold   10      "<  >" around amount controll digit
+'''
+
+import os   # os.linesep
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm, cm, inch
 from reportlab.lib.colors import white, black, yellow
-from reportlab.lib.colors import blue
-
-# from f60faktura import pdfgen ?
+#from reportlab.lib.colors import blue
 
 VERSION = '0.1alpha'
 
-# @todo page_width, page_height?
-# do not make global; name conflicts
-width, height = A4
+# @todo do not make global?
+#width, height = A4
+page_width = A4[0]
 
 
 ## Helper functions
 # All cordinates are in centimeters (cm).
 # All cordinates are relative to lower-left corner.
+# @todo c -> page (ctx?)
 
 def box (c, x, y, width, height):
     ''' Render box at (x,y) with size (width, height) '''
@@ -25,10 +36,19 @@ def box (c, x, y, width, height):
 
 def ribbon (c, y, height):
     ''' Render a box with same width as the page '''
-    box (c, 0, y, width, height)
+    # @todo can get page-width from c?
+    box (c, 0, y, page_width, height)
 
 def text (c, x, y, string):
-    c.drawString (x*mm, y*mm, string)
+    ''' Render lines of text '''
+    assert (string[-1] != os.linesep)
+    if not string.count (os.linesep):
+        c.drawString (x*mm, y*mm, string)
+    else:   # multi-line text
+        txt = c.beginText (x*mm, y*mm)
+        txt.textLines (string)
+        c.drawText (txt)
+
 
 def frame (c, x, y, width, height):
     ''' Render the four 2x2mm corners around a rectangle '''
@@ -43,7 +63,7 @@ def frame (c, x, y, width, height):
         (w*mm,0 , (w-2)*mm,0), (w*mm,0 , w*mm,2*mm),
     ])
     c.restoreState()
-    # @todo better to draw these as path
+    # @todo better to draw these as path?
 
 """
         c.lines ([(86*mm,22*mm , 84*mm,22*mm), (86*mm,22*mm , 86*mm, 20*mm)])
@@ -58,10 +78,12 @@ def frame (c, x, y, width, height):
 class Faktura (object):
 
     canvas = None
+    #page = None
 
     def __init__ (self, filename):
         self.canvas = canvas.Canvas (filename)
         #self.canvas = canvas.Canvas (filename, render_fixed_bg=True)
+        # @todo make page_size explicit (don't depend on default)
 
     def render (self):
         self._render_background()
@@ -74,26 +96,28 @@ class Faktura (object):
     # render the fixed f60 background. use this when printing on blank
     # paper. do *not* use when printing on preprinted "GIRO F60-1"
     def _render_background (self):
+        self.canvas.saveState()
         self._render_bg_part1()
         self._render_bg_part2()
         self._render_bg_part3()
         self._render_bg_part4()
+        self.canvas.restoreState()
 
 
     # These are the individual parts, listed from top to bottom:
-    # Part1: Kvitering.     (yellow)
-    # Part2: The main part  (white)
-    # Part3: Yellow line
-    # Part4: Bottom line: KID, amount, account number   (white)
+    # Part1: «Kvittering»       (yellow)
+    # Part2: The main part      (white)
+    # Part3: Yellow row         (yellow; no surprise there)
+    # Part4: KID, Kroner, ...   (white)
 
-    # Part1: Kvitering.
+    # Part1: Kvittering.
     def _render_bg_part1 (self):
         c = self.canvas
 
         c.setFillColor (yellow)
-        ribbon (c, 101, 21)
-        ribbon (c,  33,  9)
-        ribbon (c,  14,  2)
+        ribbon (c, 101.5, 21)
+        ribbon (c,  34,  8.5)
+        ribbon (c,  15,  2)     # 14+2/3 ?
 
         # "Punch whole" in the yellow ribbon by painting white boxes
         # on top. @todo make them transparent?
@@ -104,13 +128,11 @@ class Faktura (object):
 
         # Add text
         c.setFillColor (black)
-        c.setFont ('Helvetica-Bold', 13)
+        c.setFont ('Helvetica-Bold', 12)
         text (c,  15, 116, 'Kvitering')
-        c.setFont ('Helvetica', 10)
+        c.setFont ('Helvetica-Bold', 8)
         text (c,  15, 111, 'Innbetalt til konto')
-
         #c.setFont ('Helvetica-Bold', 8)
-        c.setFont ('Helvetica', 8)
         text (c,  80+2, 103+9+2, 'Beløp')
         text (c, 127+2, 103+9+2, 'Betalerens kontonummer')
         text (c, 170+2, 103+9+2, 'Blankettnummer')
@@ -122,13 +144,14 @@ class Faktura (object):
         c = self.canvas
         c.setFont ('Helvetica-Bold', 14)
         text (c, 111, 95, 'GIRO')
-        c.setFont ('Helvetica', 8)
+        c.setFont ('Helvetica-Bold', 8)
         text (c,  15, 97, 'Betalingsinformasjon')
         text (c,  15, 66, 'Betalt av')
         text (c, 114, 89, 'Underskrift ved girering') # @todo small yellow line
         text (c, 114, 66, 'Betalt til')
-        text (c, 152, 96.3,   'Betalings-')   # @todo use multi line text?
-        text (c, 152, 93, 'frist')
+#        text (c, 152, 96.3,   'Betalings-')   # @todo use multi line text?
+#        text (c, 152, 93, 'frist')
+        text (c, 150, 95+1.5, 'Betalings-\nfrist')
 
         c.setStrokeColor (black)
         #c.setLineWidth (0.33)
@@ -142,7 +165,7 @@ class Faktura (object):
         frame (c, 166.33,93 , 30.5,6)      # Underskrift ved girering
 
 
-    # Part3: Yellow line
+    # Part3: Yellow row
     # Note: reportlab does not provide a way to measure the size
     # of multiline text boxes. So no way to vertically center; therefor
     # must hardcode text values. Bug if font changes
@@ -153,58 +176,54 @@ class Faktura (object):
         #print txt.getY()
 
         c.setFillColor (black)
-        txt = c.beginText (31*mm, 36*mm + 2*mm )    # hardcoded vcenter
-        txt.textLines ('Belast\nkonto')
-        c.drawText (txt)
-        txt = c.beginText (178.5*mm, 36*mm + 2*mm ) # hardcoded vcenter
-        txt.textLines ('Kvitering\ntilbake')
-        c.drawText (txt)
+        text (c,  31  , 36.5+2, 'Belast\nkonto')        # +2 = manuall vcenter
+        text (c, 178.5, 36.5+2, 'Kvittering\ntilbake')
 
-        c.setFillColor (white)
         # Eleven white boxes: pos=(42mm,36mm), size=(5mm,6mm), hspace=1mm
+        c.setFillColor (white)
         for n in range(11):
-            box (c, 42 + n*6, 34.5 , 5,6)
-        # Last white checkbox (Kvitering tilbake)
-        box (c, 192, 34.5 , 5,6)
+            box (c, 42 + n*6, 35 , 5,6)
+        box (c, 192, 35 , 5,6)  # last white checkbox (Kvittering tilbake)
 
 
-    # Part4: Bottom line: KID, amount, account number   (white)
+    # Part4: Bottom: KID, Kroner, Øre, Til konto, Blankettnummer
     def _render_bg_part4 (self):
-        pass
+        c = self.canvas
 
-
-
-
-"""
-    ## Helpers
-
-        # Skillelinjer for KID
-        c.setStrokeColor (black)
+        # vertical lines: two black and one yellow
         c.setLineWidth (0.3333*mm)
-        c.lines ([(9*mm, 16*mm, 9*mm, 30*mm), (80*mm, 16*mm, 80*mm, 30*mm)])
-        # @todo H
+        c.setStrokeColor (yellow)
+        c.line (104.5*mm, 17*mm , 104.5*mm, 32*mm)
+        c.setStrokeColor (black)
+        c.lines ([(8*mm, 17*mm, 8*mm, 32*mm), (79*mm, 17*mm, 79*mm, 32*mm)])
 
-        underkant = 5.0/6.0 * inch
+        c.setFont ('Helvetica-Bold', 8)
+        c.setFillColor (black)
+        text (c,   9.33, 30, 'Kundeindentifikasjon (KID)')
+        text (c,  80.33, 30, 'Kroner')
+        text (c, 106   , 30, 'Øre')
+        text (c, 131   , 30, 'Til konto')
+        text (c, 172   , 30, 'Blankettnummer')
+        # @todo yellow corner bottom-right of «blankettnummer»
 
+        # @todo x-height to low.
+        c.setFont ('Helvetica', 10)
+        text (c, 1, 21, "H")
 
-## Create background
+        c.setFont ('Helvetica-Bold', 6)
+        c.saveState()
+        c.translate (2.3*mm, 44*mm)
+        c.rotate (90)
+        text (c, 0,0, 'GIRO F60-1  Got weed?')
+        c.restoreState()
 
+        # OCR-alike font
+        #c.setFont ('Helvetica-Bold', 10)
+        c.setFont ('Helvetica', 10)
+        text (c, 113, 21, "<")
+        text (c, 123, 21, ">")
 
-
-# Blankettnummer
-# needed?
-c.setFont ('Courier', 10)
-c.drawString (173*mm, 105*mm, '6071840440')
-c.drawString (173*mm, underkant, '6071840440')
-
-# Lag klammer for kontrollsiffer til sum
-c.setFont ('Helvetica', 10)
-c.drawString (115*mm, underkant, "<")
-c.drawString (125*mm, underkant, ">")
-
-# Lag tekst som beskriver feltene (nederste rad)
-c.setFont("Helvetica-Bold", 6)
-
-
-#c.line (0, underkant, width, underkant)
-"""
+        #underkant = 21.166*mm
+        #underkant = 5.0/6.0 * inch
+        #c.drawString (113*mm, underkant, '<')
+        #c.drawString (123*mm, underkant, '>')

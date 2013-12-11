@@ -1,4 +1,11 @@
 
+
+
+# Blankettnummer
+# Q: but what number to use??
+c.drawString (173*mm, 105*mm, '6071840440')
+c.drawString (173*mm, underkant, '6071840440')
+
 	# Create 1cm x 1cm grid
         c = self.canvas
         c.setStrokeGray (0.75)
