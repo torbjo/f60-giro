@@ -6,7 +6,6 @@ Render the static/fixed background of a F60-1 GIRO.
 Use this when printing on a blank sheet of paper. Do *not* use when
 printing on a preprinted "GIRO F60-1".
 
-
 These are the individual parts, listed from top to bottom:
 
   Part1: «Kvittering»       (yellow)
@@ -102,8 +101,8 @@ def render (canvas):
 def _render_part1 (c):
     c.setFillColor (yellow)
     ribbon (c, 101.5, 21)
-    ribbon (c,  34,  8.5)
-    ribbon (c,  15,  2)     # 14+2/3 ?
+    ribbon (c,  34,    8.5)
+    ribbon (c,  15,    2)     # 14+2/3 ?
 
     # "Punch whole" in the yellow ribbon by painting white boxes
     # on top. @todo make them transparent?
@@ -148,7 +147,7 @@ def _render_part2 (c):
     frame (c,  12,44 , 86,22)       # Betalt av
     frame (c, 111,44 , 86,22)       # Betalt til
     frame (c, 111,70.5 , 86,18)     # Underskrift ved girering
-    frame (c, 166.33,93 , 30.5,6)      # Underskrift ved girering
+    frame (c, 166.33,93 , 30.5,6)   # Betalingsfrist
 
 
 
@@ -157,11 +156,8 @@ def _render_part2 (c):
 # of multiline text boxes. So no way to vertically center; therefor
 # must hardcode text values. Bug if font changes
 def _render_part3 (c):
-    c.setFont ('Helvetica', 8)
-    #txt = c.beginText (31*mm, 36*mm )
-    #print txt.getY()
-
     c.setFillColor (black)
+    c.setFont ('Helvetica', 8)
     text (c,  31  , 36.5+2, 'Belast\nkonto')        # +2 = manuall vcenter
     text (c, 178.5, 36.5+2, 'Kvittering\ntilbake')
 
@@ -177,13 +173,14 @@ def _render_part3 (c):
 def _render_part4 (c):
     # vertical lines: two black and one yellow
     c.setLineWidth (0.3333*mm)
-    c.setStrokeColor (yellow)
-    c.line (104.5*mm, 17*mm , 104.5*mm, 32*mm)
     c.setStrokeColor (black)
     c.lines ([(8*mm, 17*mm, 8*mm, 32*mm), (79*mm, 17*mm, 79*mm, 32*mm)])
+    c.setStrokeColor (yellow)
+    c.line (104.5*mm, 17*mm , 104.5*mm, 32*mm)
 
     c.setFont ('Helvetica-Bold', 8)
     c.setFillColor (black)
+    c.setStrokeColor (black)
     text (c,   9.33, 30, 'Kundeindentifikasjon (KID)')
     text (c,  80.33, 30, 'Kroner')
     text (c, 106   , 30, 'Øre')
@@ -193,8 +190,8 @@ def _render_part4 (c):
 
     # fixed text
     c.setFont ('Helvetica', 10)
-    y = 5.0/6.0 * inch
-    y = 21.166*mm   # acount line
+    y = 5.0/6.0 * inch / mm
+    #y = 21.166*mm   # acount line
     text (c,   1, y, "H")       # @todo x-height to low.
     text (c, 113, y, "<")
     text (c, 123, y, ">")
