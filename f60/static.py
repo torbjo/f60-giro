@@ -37,11 +37,27 @@ page_width  = A4[0]
 #page_height = A4[1]
 
 
+## Public API
+
+def render (canvas):
+    ''' Render the static/fixed background of a F60-1 GIRO '''
+    canvas.saveState()
+    _render_part1 (canvas)
+    _render_part2 (canvas)
+    _render_part3 (canvas)
+    _render_part4 (canvas)
+    canvas.restoreState()
+
+
+
+## Internal API
+
 ## Helper functions
 # All cordinates are in millimeters (mm).
 # Origin is the lower-left corner.
-# @todo move to utility.py / helpers.py ?
 # @todo c -> page (ctx?)
+# @todo move to utility.py / helpers.py ?
+#from utils import box, ribbon, text, frame
 
 def box (c, x, y, width, height):
     ''' Render box at (x,y) with size (width, height) '''
@@ -82,20 +98,6 @@ def frame (c, x, y, width, height):
 
 
 
-## Public API
-
-def render (canvas):
-    ''' Render the static/fixed background of a F60-1 GIRO '''
-    canvas.saveState()
-    _render_part1 (canvas)
-    _render_part2 (canvas)
-    _render_part3 (canvas)
-    _render_part4 (canvas)
-    canvas.restoreState()
-
-
-
-## Internal API
 
 # Part1: Kvittering.
 def _render_part1 (c):

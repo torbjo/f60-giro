@@ -1,5 +1,15 @@
 
 
+while y < page_height:
+    while x < page_width:
+        print x,y
+        x += cm
+    x = 0
+    y += cm
+
+c.grid (range (0, int(page_width),  int(cm)),
+        range (0, int(page_height), int(cm)))
+
 
 # Blankettnummer
 # Q: but what number to use??
