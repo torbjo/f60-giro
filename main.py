@@ -4,5 +4,6 @@ from f60 import invoice
 
 print invoice.VERSION
 
+#o = invoice.Invoice (sys.argv[1])
 o = invoice.Faktura (sys.argv[1])
 o.render()
