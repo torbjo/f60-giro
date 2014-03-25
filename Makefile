@@ -1,7 +1,7 @@
 
-all: out.pdf
-	xpdf out.pdf
+all: example.pdf
+	xdg-open $<
 
-out.pdf: main.py f60/*.py
-	python main.py out.pdf
+example.pdf: example.py f60/*.py
+	python $< $@
 
