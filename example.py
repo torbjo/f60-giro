@@ -2,8 +2,6 @@
 
 import sys
 import datetime
-from f60.invoice import Invoice
-#from f60 import invoice    # then can not use invoice as local variable
 
 # Note: All fields must either be strings or convertible to strings.
 
@@ -46,5 +44,22 @@ invoice = dict (
 )
 
 
-inv = Invoice (biller)
-inv.render (sys.argv[1], invoice)
+from f60.invoice import render as render_invoice
+render_invoice (sys.argv[1], biller, invoice)
+
+#import f60
+#f60.invoice.render (sys.argv[1], biller, invoice)
+
+
+# @todo support
+#from f60.invoice import Invoice
+#inv = Invoice (biller)
+#inv.render ('page1.pdf', invoice)
+#inv.render ('page2.pdf', invoice)
+
+
+# @todo multi-page document
+#obj = Invoice ('out.pdf')
+#obj.add_page (biller, invoice1)
+#obj.add_page (biller, invoice2)
+#obj.close()    # does the rendering

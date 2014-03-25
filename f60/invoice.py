@@ -23,6 +23,13 @@ from fields import render as render_fields
 styles = getSampleStyleSheet()
 
 
+
+def render (filename, biller, invoice):
+    ''' Helper for one-shot mode '''
+    Invoice (biller).render (filename, invoice)
+
+
+
 # @todo better name. PDFInvoice?
 class Invoice (object):
 
