@@ -39,9 +39,29 @@ invoice = dict (
         #('Insult-consulting, 22.5t',                           16875),
         # add unit? other examples than t/timer and stk.
     ),
+    # @todo howto handle split on ',' in giro-part?
     #total = u'150 000,-'    # calculated from lines.quantity * lines.price
     # @todo extra text
 )
+
+
+# Optional
+# @todo move account to biller?
+giro = dict (
+    account =       '0535 38 57497',
+#    kid =           '246810121416',
+    # The rest of these fileds are auto-populated from 'invoice'
+#    amount =        ('12000', '00'),
+#    info =          'Fakturanummer 1359',
+#    due =           '2014-12-31',
+#    payer =         'Ima Sucker\nDrammensveien 1\n0001 Oslo',
+#    payee =         'NORMAL',
+
+    # Use pre-printed giro, or use blank paper (add the giro background).
+    add_static_background = True,
+)
+invoice['giro'] = giro
+
 
 
 #import f60

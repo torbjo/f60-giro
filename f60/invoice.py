@@ -52,6 +52,7 @@ class Invoice (object):
             Spacer (0, 12*mm),
             self.make_invoice_lines (invoice),
         ]
+        self.handle_giro (invoice)  # note: must be run after make_invoice_lines() since it calculates invoice.total. @todo split calc-code from layout code
         # @todo filter out None so make_* can drop objects
         self.doc.build (story, onFirstPage=self.on_first_page, onLaterPages=self.on_later_pages)
         #self.doc.build (story, onFirstPage=self.on_new_page, onLaterPages=self.on_new_page)
@@ -60,10 +61,28 @@ class Invoice (object):
         #c.save()
 
 
+    # handle giro-part
+    def handle_giro (self, invoice):
+        self.invoice = invoice  # for on_*_page() handlers. @todo only giro?
+        giro = invoice.get ('giro')
+        if not giro: return
+        giro['amount'] = (invoice['total'], '00')
+        giro['info'] =  'FAKTURA ' + invoice['invoice_no']
+        giro['due'] =   str(invoice['due'])     # xxx
+        giro['payer'] = '%s\n%s' % (invoice['payer']['name'], invoice['payer']['address'])
+        giro['payee'] = '%s\n%s' % (self.biller['name'], self.biller['address'])
+        # @todo generate kid if not set?
+
+
+
     def on_first_page (self, canv, doc):
-        pass
-        #render_static_background (canv)
-        #render_fields (c, **data)
+        giro = self.invoice.get ('giro')
+        #giro = self.giro
+        if not giro: return
+        if giro.get ('add_static_background'):
+            render_static_background (canv)
+            del giro['add_static_background']
+        render_fields (canv, **giro)
 
     def on_later_pages (self, canv, doc):
         raise Exception ('No support for multi-page!')
@@ -93,7 +112,10 @@ class Invoice (object):
         #data.append (('', '', 'Total', '%d,-' % sum([l.sum for l in self.invoice_lines])))
         #data.append (('Sum mva-pliktig: 0,- | Sum mva-fritt: %.0f,-'%total, '', 'Total', '%d,-'%total))
         total = invoice.get('total')
-        total = total if total else '%d,-'%sum ([l[-1] for l in lines])
+        #total = total if total else '%d,-'%sum ([l[-1] for l in lines])
+        total = total if total else sum ([l[-1] for l in lines])
+        invoice['total'] = str(int(total))   # xxx store for use by handle_giro
+        total = '%d,-'%total
         data.extend ((
             ('', '', 'Sum mva-pliktig', '0,-'),
             ('', '', 'Sum mva-fritt',   total),

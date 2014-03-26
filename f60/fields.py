@@ -1,7 +1,10 @@
 # -*- encoding: utf-8 -*-
-# @todo ammount: what if str and not tuple?
-#       due: accept datetime.data or datetime.datatime also?
-# @todo change fonts per field
+# TODO
+# amount: what if str and not tuple? only take string, and no magic?
+# amount: don't print ',' if empty
+# payee -> biller?
+# due: accept datetime.data or datetime.datatime also?
+# possible to change fonts per field
 
 
 '''
