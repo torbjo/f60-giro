@@ -44,11 +44,31 @@ invoice = dict (
 )
 
 
-from f60.invoice import render as render_invoice
-render_invoice (sys.argv[1], biller, invoice)
-
 #import f60
 #f60.invoice.render (sys.argv[1], biller, invoice)
+from f60.invoice import render as render_invoice
+
+
+## Example 1) Render to file passing filename:
+render_invoice (sys.argv[1], biller, invoice)
+exit(0)
+
+
+## Example 2) Render to StringIO buffer (or other file-like object):
+#fp = open (sys.argv[1], 'wb')
+from cStringIO import StringIO
+fp = StringIO()
+render_invoice (fp, biller, invoice)
+data = fp.getvalue()
+# or stream the data back from StringIO buffer:
+#size = fp.tell()
+#fp.seek(0)
+#while True:
+#    buf = fp.read(8192)
+#    if not buf: break
+#    print len(buf)
+#fp.close()
+
 
 
 # @todo support

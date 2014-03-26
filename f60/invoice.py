@@ -3,6 +3,7 @@
 # Or use F60GiroDocTemplate to get static background?
 # make SimpleDocTemplate changeable so can use F60GiroDocTemplate
 # Use font with better unicode support
+# rename filename -> fp (since it takes any file like object)
 
 #from reportlab import platypus
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
