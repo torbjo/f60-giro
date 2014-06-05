@@ -50,6 +50,7 @@ class Invoice (object):
         story = [
             self.make_header (invoice),
             Spacer (0, 12*mm),
+            self.make_invoice_text (invoice),
             self.make_invoice_lines (invoice),
         ]
         self.handle_giro (invoice)  # note: must be run after make_invoice_lines() since it calculates invoice.total. @todo split calc-code from layout code
@@ -100,8 +101,16 @@ class Invoice (object):
         return img
 
 
+    def make_invoice_text (self, invoice):
+        if not invoice.has_key('text'): return Spacer (0,0)
+        sty = styles['BodyText']
+        return XPreformatted (invoice['text'], sty)
+
+
+
     # @todo drop antall? only: Beskrivelse and Pris?
     def make_invoice_lines (self, invoice):
+        if not invoice.has_key('lines'): return Spacer (0,0)
         data = [('Beskrivelse', 'Antall', 'Pris', 'Sum')]
         lines = invoice['lines']
         if len(lines[0]) == 3:
