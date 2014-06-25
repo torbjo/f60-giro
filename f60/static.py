@@ -198,10 +198,10 @@ def _render_part4 (c):
     text (c, 113, y, "<")
     text (c, 123, y, ">")
 
-    # trademark :)
+    # "trademark" :)
     c.setFont ('Helvetica-Bold', 6)
     c.saveState()
     c.translate (2.3*mm, 44*mm)
     c.rotate (90)
-    text (c, 0,0, 'GIRO F60-1  Got weed?')
+    text (c, 0,0, 'GIRO F60-1 github.com/torbjo/f60-giro')
     c.restoreState()
