@@ -49,10 +49,14 @@ class Invoice (object):
         #doc.subject = 'what to put here?'
         story = [
             self.make_header (invoice),
-            Spacer (0, 12*mm),
-            self.make_invoice_text (invoice),
-            self.make_invoice_lines (invoice),
+            Spacer (0, 4*mm),
+#            Spacer (0, 12*mm),
+#            self.make_invoice_text (invoice),
+#            self.make_invoice_lines (invoice),
         ]
+        story.extend (self.make_invoice_text (invoice))
+        story.append (self.make_invoice_lines (invoice))
+
         self.handle_giro (invoice)  # note: must be run after make_invoice_lines() since it calculates invoice.total. @todo split calc-code from layout code
         # @todo filter out None so make_* can drop objects
         self.doc.build (story, onFirstPage=self.on_first_page, onLaterPages=self.on_later_pages)
@@ -68,7 +72,10 @@ class Invoice (object):
         giro = invoice.get ('giro')
         if not giro: return
         giro['amount'] = (invoice['total'], '00')
-        giro['info'] =  'FAKTURA ' + invoice['invoice_no']
+        if invoice.has_key ('info'):
+            giro['info'] = invoice['info']
+        else:
+            giro['info'] =  'FAKTURA ' + invoice['invoice_no']
         giro['due'] =   str(invoice['due'])     # xxx
         giro['payer'] = '%s\n%s' % (invoice['payer']['name'], invoice['payer']['address'])
         giro['payee'] = '%s\n%s' % (self.biller['name'], self.biller['address'])
@@ -102,10 +109,16 @@ class Invoice (object):
 
 
     def make_invoice_text (self, invoice):
-        if not invoice.has_key('text'): return Spacer (0,0)
-        sty = styles['BodyText']
-        return XPreformatted (invoice['text'], sty)
-
+        ''' Returns list of flowables '''
+        if not invoice.has_key('text'):
+            return [Spacer (0,0)]
+        text = invoice['text']
+        sty = styles['BodyText'].clone('MyBodyText')
+        sty.fontSize = 9
+        if isinstance (text, str):
+            return [XPreformatted (invoice['text'], sty)]
+        # text must be an iterable of platypus flowables
+        return text
 
 
     # @todo drop antall? only: Beskrivelse and Pris?
